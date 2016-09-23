@@ -62,7 +62,7 @@ void timer_stop(struct Timer* handle)
 }
 
 /**
-  * @brief  background ticks, timer repeat invoking interval 5ms.
+  * @brief  main loop.
   * @param  None.
   * @retval None
   */
@@ -84,7 +84,7 @@ void timer_loop()
 /**
   * @brief  background ticks, timer repeat invoking interval 1ms.
   * @param  None.
-  * @retval None
+  * @retval None.
   */
 void timer_ticks()
 {

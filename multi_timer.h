@@ -7,13 +7,12 @@
 #define _MULTI_TIMER_H_
 
 #include "stdint.h"
-#include "string.h"
 
 typedef struct Timer {
     uint32_t timeout;
     uint32_t repeat;
-	void (*timeout_cb)(void);
-	struct Timer* next;
+    void (*timeout_cb)(void);
+    struct Timer* next;
 }Timer;
 
 #ifdef __cplusplus  
