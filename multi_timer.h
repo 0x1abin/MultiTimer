@@ -7,6 +7,7 @@
 #define _MULTI_TIMER_H_
 
 #include "stdint.h"
+#include "stddef.h"
 
 typedef struct Timer {
     uint32_t timeout;
