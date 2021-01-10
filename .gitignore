@@ -1,0 +1,4 @@
+*.o
+*.out 
+test
+tmp

@@ -9,7 +9,7 @@ MultiTimer 是一个软件定时器扩展模块，可无限扩展你所需的定
 ```
 struct Timer timer1;
 ```
-2.初始化定时器对象，注册定时器回调处理函数，设置定时时间（ms），循环定时触发时间
+2.初始化定时器对象，注册定时器回调处理函数，设置延迟启动时间（ms），循环定时触发时间
 
 ```
 timer_init(struct Timer* handle, void(*timeout_cb)(), uint32_t timeout, uint32_t repeat);
