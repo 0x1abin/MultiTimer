@@ -10,7 +10,8 @@
 static struct Timer* head_handle = NULL;
 
 //Timer ticks
-static uint32_t _timer_ticks = (1 << 32)- 1000;
+//static uint32_t _timer_ticks = (1 << 32)- 1000; // only for test tick clock overflow
+static uint32_t _timer_ticks = 0;
 
 /**
   * @brief  Initializes the timer struct handle.
@@ -31,8 +32,8 @@ void timer_init(struct Timer* handle, void (*timeout_cb)(void *arg), \
     handle->cur_ticks           = _timer_ticks;  
     handle->cur_expired_time    = handle->timeout;
     handle->arg                 = arg;
-    printf("cur_ticks: %u, cur_expired_time: %u, _timer_ticks: %u, timeout: %u\r\n", 
-      handle->cur_ticks, handle->cur_expired_time, _timer_ticks, timeout);
+    //printf("cur_ticks: %u, cur_expired_time: %u, _timer_ticks: %u, timeout: %u\r\n", 
+    //  handle->cur_ticks, handle->cur_expired_time, _timer_ticks, timeout);
 }
 
 /**
@@ -93,8 +94,8 @@ void timer_loop(void)
         More detail on tick-clock overflow, please see https://blog.csdn.net/szullc/article/details/115332326
         */
         if(_timer_ticks - target->cur_ticks >= target->cur_expired_time) {
-            printf("cur_ticks: %u, cur_expired_time: %u, _timer_ticks: %u\r\n", 
-                    target->cur_ticks, target->cur_expired_time, _timer_ticks);
+            //printf("cur_ticks: %u, cur_expired_time: %u, _timer_ticks: %u\r\n", 
+            //        target->cur_ticks, target->cur_expired_time, _timer_ticks);
             if(target->repeat == 0) {
                 timer_stop(target);
             } else {
