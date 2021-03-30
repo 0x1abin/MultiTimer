@@ -71,7 +71,7 @@ void timer_stop(struct Timer* handle)
   * @param  None.
   * @retval None
   */
-void timer_loop()
+void timer_loop(void)
 {
     struct Timer* target;
     for(target = head_handle; target; target = target->next)
@@ -96,7 +96,7 @@ void timer_loop()
   * @param  None.
   * @retval None.
   */
-void timer_ticks()
+void timer_ticks(void)
 {
     _timer_ticks++;
 }
