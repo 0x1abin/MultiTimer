@@ -16,6 +16,8 @@ Your can configurate for your tick time such as 5ms/10ms and so on.
 #define CFG_TIMER_1_TICK_N_MS   1
 
 typedef struct Timer {
+    uint32_t        cur_ticks;          /* Record current timer start tick */
+    uint32_t        cur_expired_time;   /* Record current timer expired time */
     uint32_t        timeout;    /* Delay (xx ms) time to start tiemr */
     uint32_t        repeat;     /* Timer interval expired time (xx ms) */
     void *          arg;        /* Input argument for timeout_cb function */

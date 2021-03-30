@@ -3,13 +3,14 @@
  * All rights reserved
  */
 
+#include <stdio.h>
 #include "multi_timer.h"
 
 //timer handle list head.
 static struct Timer* head_handle = NULL;
 
 //Timer ticks
-static uint32_t _timer_ticks = 0;
+static uint32_t _timer_ticks = (1 << 32)- 1000;
 
 /**
   * @brief  Initializes the timer struct handle.
@@ -24,10 +25,14 @@ void timer_init(struct Timer* handle, void (*timeout_cb)(void *arg), \
       uint32_t timeout, uint32_t repeat, void *arg)
 {
     // memset(handle, sizeof(struct Timer), 0);
-    handle->timeout_cb = timeout_cb;
-    handle->timeout    = _timer_ticks + timeout;
-    handle->repeat     = repeat;
-    handle->arg        = arg;
+    handle->timeout_cb          = timeout_cb;      
+    handle->timeout             = timeout;
+    handle->repeat              = repeat;
+    handle->cur_ticks           = _timer_ticks;  
+    handle->cur_expired_time    = handle->timeout;
+    handle->arg                 = arg;
+    printf("cur_ticks: %u, cur_expired_time: %u, _timer_ticks: %u, timeout: %u\r\n", 
+      handle->cur_ticks, handle->cur_expired_time, _timer_ticks, timeout);
 }
 
 /**
@@ -84,12 +89,18 @@ void timer_loop(void)
     struct Timer* target;
 
     for(target = head_handle; target; target = target->next) {
-        if(_timer_ticks >= target->timeout) {
+        /* 
+        More detail on tick-clock overflow, please see https://blog.csdn.net/szullc/article/details/115332326
+        */
+        if(_timer_ticks - target->cur_ticks >= target->cur_expired_time) {
+            printf("cur_ticks: %u, cur_expired_time: %u, _timer_ticks: %u\r\n", 
+                    target->cur_ticks, target->cur_expired_time, _timer_ticks);
             if(target->repeat == 0) {
                 timer_stop(target);
             } else {
-                target->timeout = _timer_ticks + target->repeat;
-            }
+                target->cur_ticks = _timer_ticks;
+                target->cur_expired_time = target->repeat;
+            }            
             target->timeout_cb(target->arg);
         }
     }
