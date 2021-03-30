@@ -80,12 +80,13 @@ int main(void)
     timer_init(&timer1, timer1_callback, 4000, 1000, &timer1);  // start timer after 4s
     timer_start(&timer1);
 
-    timer_init(&timer2, timer2_callback, 0, 2000, &timer2); // start timer right now
+    timer_init(&timer2, timer2_callback, 0, 5000, &timer2); // start timer right now
     timer_start(&timer2);
 
     while(1) {
+        /* Maybe some sleep time is needed to avoid running CPU all the time. */
         timer_loop();
     }
-    
+
     return 0;
 }
