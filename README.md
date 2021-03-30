@@ -4,23 +4,35 @@
 MultiTimer 是一个软件定时器扩展模块，可无限扩展你所需的定时器任务，取代传统的标志位判断方式， 更优雅更便捷地管理程序的时间触发时序。
 
 ## 使用方法
-1.先申请一个定时器管理handle
+1.配置定时器tick时钟频率（1个tick代表N毫秒钟）
+
+```
+/*
+It means 1 tick for 1ms. 
+Your can configurate for your tick time such as 5ms/10ms and so on.
+*/
+#define CFG_TIMER_1_TICK_N_MS   1
+```
+
+2.先申请一个定时器管理handle
 
 ```
 struct Timer timer1;
 ```
-2.初始化定时器对象，注册定时器回调处理函数，设置延迟启动时间（ms），循环定时触发时间
+
+3.初始化定时器对象，注册定时器回调处理函数，设置延迟启动时间（ms），循环定时触发时间
 
 ```
-timer_init(struct Timer* handle, void(*timeout_cb)(), uint32_t timeout, uint32_t repeat);
+timer_init(struct Timer* handle, void(*timeout_cb)(void *arg), uint32_t timeout, uint32_t repeat);
 ```
 
-3.启动定时器
+4.启动定时器
 
 ```
 timer_start(&timer1);
 ```
-4.设置1ms的硬件定时器循环调用 *timer_ticks()* 以提供时间基准
+
+5.设置1ms的硬件定时器循环调用 *timer_ticks()* 以提供时间基准
 
 ```
 void HAL_SYSTICK_Callback(void)
@@ -29,8 +41,7 @@ void HAL_SYSTICK_Callback(void)
 }
 ```
 
-
-5.在主循环调用定时器后台处理函数
+6.在主循环调用定时器后台处理函数
 
 ```
 int main() 
@@ -51,12 +62,12 @@ int main()
 struct Timer timer1;
 struct Timer timer2;
 
-void timer1_callback()
+void timer1_callback(void *arg)
 {
     printf("timer1 timeout!\r\n");
 }
 
-void timer2_callback()
+void timer2_callback(void *arg)
 {
     printf("timer2 timeout!\r\n");
 }
