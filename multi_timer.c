@@ -18,12 +18,14 @@ static uint32_t _timer_ticks = 0;
   * @param  repeat: repeat interval time.
   * @retval None
   */
-void timer_init(struct Timer* handle, void (*timeout_cb)(), uint32_t timeout, uint32_t repeat)
+void timer_init(struct Timer* handle, void (*timeout_cb)(void *arg), \
+      uint32_t timeout, uint32_t repeat, void *arg)
 {
     // memset(handle, sizeof(struct Timer), 0);
     handle->timeout_cb = timeout_cb;
     handle->timeout    = _timer_ticks + timeout;
     handle->repeat     = repeat;
+    handle->arg        = arg;
 }
 
 /**
@@ -86,18 +88,18 @@ void timer_loop(void)
             {
                 target->timeout = _timer_ticks + target->repeat;
             }
-            target->timeout_cb();
+            target->timeout_cb(target->arg);
         }
     }
 }
 
 /**
-  * @brief  background ticks, timer repeat invoking interval 1ms.
+  * @brief  background ticks, timer repeat invoking interval nms.
   * @param  None.
   * @retval None.
   */
 void timer_ticks(void)
 {
-    _timer_ticks++;
+    _timer_ticks += CFG_TIMER_1_TICK_N_MS;
 }
 
