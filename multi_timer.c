@@ -15,7 +15,9 @@ static uint32_t _timer_ticks = 0;
   * @brief  Initializes the timer struct handle.
   * @param  handle: the timer handle strcut.
   * @param  timeout_cb: timeout callback.
+  * @param  timeout: delay to start the timer.
   * @param  repeat: repeat interval time.
+  * @param  arg: the input argument for timeout_cb fucntion.
   * @retval None
   */
 void timer_init(struct Timer* handle, void (*timeout_cb)(void *arg), \
@@ -36,36 +38,40 @@ void timer_init(struct Timer* handle, void (*timeout_cb)(void *arg), \
 int timer_start(struct Timer* handle)
 {
     struct Timer* target = head_handle;
-    while(target)
-    {
-        if(target == handle)
+
+    while(target) {
+        if(target == handle) {
             return -1;  //already exist.
+        }            
         target = target->next;
     }
     handle->next = head_handle;
     head_handle  = handle;
+
     return 0;
 }
 
 /**
   * @brief  Stop the timer work, remove the handle off work list.
   * @param  handle: target handle strcut.
-  * @retval None
+  * @retval 0: succeed. -1: timer not exist.
   */
-void timer_stop(struct Timer* handle)
+int timer_stop(struct Timer* handle)
 {
     struct Timer** curr;
-    for(curr = &head_handle; *curr;)
-    {
+
+    for(curr = &head_handle; *curr;) {
         struct Timer* entry = *curr;
-        if(entry == handle)
-        {
+        if(entry == handle) {
             *curr = entry->next;
-            //			free(entry);
-        }
-        else
+            //free(entry);
+            return 0; // found specified timer
+        } else {
             curr = &entry->next;
+        }            
     }
+
+    return 0;
 }
 
 /**
@@ -76,16 +82,12 @@ void timer_stop(struct Timer* handle)
 void timer_loop(void)
 {
     struct Timer* target;
-    for(target = head_handle; target; target = target->next)
-    {
-        if(_timer_ticks >= target->timeout)
-        {
-            if(target->repeat == 0)
-            {
+
+    for(target = head_handle; target; target = target->next) {
+        if(_timer_ticks >= target->timeout) {
+            if(target->repeat == 0) {
                 timer_stop(target);
-            }
-            else
-            {
+            } else {
                 target->timeout = _timer_ticks + target->repeat;
             }
             target->timeout_cb(target->arg);
@@ -102,4 +104,3 @@ void timer_ticks(void)
 {
     _timer_ticks += CFG_TIMER_1_TICK_N_MS;
 }
-
