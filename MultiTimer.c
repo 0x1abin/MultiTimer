@@ -92,17 +92,17 @@ int MultiTimerStop(MultiTimer* timer)
   */
 void MultiTimerYield(void)
 {
-    MultiTimer* target = timerList;
-    for (; target; target = target->next) {
-        if (platformTicksFunction() >= target->deadline) {
-            if (target->period == 0) {
-                MultiTimerStop(target);
-            } else {
-                target->deadline = platformTicksFunction() + target->period;
-            }
+    MultiTimer* target;
+    for (target = timerList; target; target = target->next) {
+        if (target->deadline > platformTicksFunction()) {
+            return;
+        }
+        MultiTimerStop(target);
+        if (target->callback) {
             target->callback(target, target->userData);
-        } else {
-            break;
+        }
+        if (target->period) {
+            MultiTimerStart(target, target->period);
         }
     }
 }
