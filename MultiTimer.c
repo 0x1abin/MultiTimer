@@ -45,11 +45,21 @@ int MultiTimerInit(MultiTimer* timer, uint32_t period, MultiTimerCallback_t cb, 
   */
 int MultiTimerStart(MultiTimer* timer, uint32_t startTime)
 {
+    MultiTimer** nextTimer = &timerList;
+
+    /* Remove the existing target timer. */
+    for (; *nextTimer; nextTimer = &(*nextTimer)->next) {
+        if (timer == *nextTimer) {
+            *nextTimer = timer->next; /* remove from list */
+            break;
+        }
+    }
+
+    /* New deadline time. */
     timer->deadline = platformTicksFunction() + startTime;
 
-    // Insert timer.
-    MultiTimer** nextTimer = &timerList;
-    for (;; nextTimer = &(*nextTimer)->next) {
+    /* Insert timer. */
+    for (nextTimer = &timerList;; nextTimer = &(*nextTimer)->next) {
         if (!*nextTimer) {
             timer->next = NULL;
             *nextTimer = timer;
@@ -61,7 +71,6 @@ int MultiTimerStart(MultiTimer* timer, uint32_t startTime)
             break;
         }
     }
-
     return 0;
 }
 
@@ -74,7 +83,7 @@ int MultiTimerStop(MultiTimer* timer)
 {
     MultiTimer** nextTimer = &timerList;
 
-    // Find and remove timer.
+    /* Find and remove timer. */
     for (; *nextTimer; nextTimer = &(*nextTimer)->next) {
         MultiTimer* entry = *nextTimer;
         if (entry == timer) {
@@ -92,17 +101,17 @@ int MultiTimerStop(MultiTimer* timer)
   */
 void MultiTimerYield(void)
 {
-    MultiTimer* target;
-    for (target = timerList; target; target = target->next) {
+    MultiTimer* target = timerList;
+    for (; target; target = target->next) {
         if (target->deadline > platformTicksFunction()) {
             return;
         }
         MultiTimerStop(target);
-        if (target->callback) {
-            target->callback(target, target->userData);
-        }
         if (target->period) {
             MultiTimerStart(target, target->period);
+        }
+        if (target->callback) {
+            target->callback(target, target->userData);
         }
     }
 }
