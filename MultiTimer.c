@@ -20,7 +20,7 @@ int MultiTimerInstall(PlatformTicksFunction_t ticksFunc)
 
 int MultiTimerStart(MultiTimer* timer, uint32_t timing, MultiTimerCallback_t callback, void* userData)
 {
-    if (!timer || !callback || timing > MULTIMER_MAX_TIMEOUT) {
+    if (!timer || !callback || timing > MULTIMER_MAX_TIMEOUT / 2 ) {
         return -1;
     }
     MultiTimer** nextTimer = &timerList;
