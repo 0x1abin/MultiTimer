@@ -7,46 +7,18 @@ static MultiTimer* timerList = NULL;
 // Timer tick
 static PlatformTicksFunction_t platformTicksFunction = NULL;
 
-/**
- * @brief 
- * 
- * @param ticksFunc 
- * @return int 
- */
 int MultiTimerInstall(PlatformTicksFunction_t ticksFunc)
 {
     platformTicksFunction = ticksFunc;
     return 0;
 }
 
-/**
-  * @brief  Initializes the timer struct handle.
-  * @param  handle: the timer handle strcut.
-  * @param  timeout_cb: deadline callback.
-  * @param  repeat: repeat interval time.
-  * @retval None
-  */
-int MultiTimerInit(MultiTimer* timer, uint32_t period, MultiTimerCallback_t cb, void* userData)
+int MultiTimerStart(MultiTimer* timer, uint32_t timing, MultiTimerCallback_t callback, void* userData)
 {
-    if (!timer || !cb) {
+    if (!timer || !callback) {
         return -1;
     }
-    timer->callback = cb;
-    timer->userData = userData;
-    timer->period = period;
-    return 0;
-}
-
-/**
-  * @brief  Start the timer work, add the handle into work list.
-  * @param  handle: target handle strcut.
-  * @param  deadline: Set the start time.
-  * @retval 0: succeed. -1: already exist.
-  */
-int MultiTimerStart(MultiTimer* timer, uint32_t startTime)
-{
     MultiTimer** nextTimer = &timerList;
-
     /* Remove the existing target timer. */
     for (; *nextTimer; nextTimer = &(*nextTimer)->next) {
         if (timer == *nextTimer) {
@@ -55,8 +27,10 @@ int MultiTimerStart(MultiTimer* timer, uint32_t startTime)
         }
     }
 
-    /* New deadline time. */
-    timer->deadline = platformTicksFunction() + startTime;
+    /* Init timer. */
+    timer->deadline = platformTicksFunction() + timing;
+    timer->callback = callback;
+    timer->userData = userData;
 
     /* Insert timer. */
     for (nextTimer = &timerList;; nextTimer = &(*nextTimer)->next) {
@@ -74,15 +48,9 @@ int MultiTimerStart(MultiTimer* timer, uint32_t startTime)
     return 0;
 }
 
-/**
-  * @brief  Stop the timer work, remove the handle off work list.
-  * @param  handle: target handle strcut.
-  * @retval None
-  */
 int MultiTimerStop(MultiTimer* timer)
 {
     MultiTimer** nextTimer = &timerList;
-
     /* Find and remove timer. */
     for (; *nextTimer; nextTimer = &(*nextTimer)->next) {
         MultiTimer* entry = *nextTimer;
@@ -94,29 +62,25 @@ int MultiTimerStop(MultiTimer* timer)
     return 0;
 }
 
-/**
-  * @brief  main loop.
-  * @param  None.
-  * @retval None
-  */
-void MultiTimerYield(void)
+int MultiTimerYield(void)
 {
     MultiTimer** nextTimer = &timerList;
-
     for (; *nextTimer; nextTimer = &(*nextTimer)->next) {
         MultiTimer* entry = *nextTimer;
         /* Sorted list, just process with the front part. */
         if (entry->deadline > platformTicksFunction()) {
-            return;
+            return (int)(entry->deadline - platformTicksFunction());
         }
         /* remove expired timer from list */
         *nextTimer = entry->next;
 
-        if (entry->period) {
-            MultiTimerStart(entry, entry->period);
-        }
+        /* call callback */
         if (entry->callback) {
             entry->callback(entry, entry->userData);
         }
+        if (entry->next == NULL) {
+            return 0;
+        }
     }
+    return 0;
 }

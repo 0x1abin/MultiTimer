@@ -17,7 +17,7 @@ INC += -I$(IDIR)
 TARGET = $(BIN_PATH)/test 
 
 C_SRCS += examples/test_linux.c
-C_SRCS += multi_timer.c
+C_SRCS += MultiTimer.c
 OBJ := $(patsubst %.c,%.o,$(filter %.c,$(addprefix $(SRC_PATH)/,$(C_SRCS))))
 TARGET_OBJ := $(addprefix $(OBJ_PATH)/,$(OBJ))
 
