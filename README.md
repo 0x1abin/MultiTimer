@@ -4,52 +4,38 @@
 MultiTimer 是一个软件定时器扩展模块，可无限扩展你所需的定时器任务，取代传统的标志位判断方式， 更优雅更便捷地管理程序的时间触发时序。
 
 ## 使用方法
-1.在multi_timer.h中配置定时器tick时钟频率（即1个tick代表N毫秒钟）
+1. 配置系统时间基准接口，安装定时器驱动；
 
-```
-/*
-It means 1 tick for 1ms. 
-Your can configurate for your tick time such as 5ms/10ms and so on.
-*/
-#define CFG_TIMER_1_TICK_N_MS   1
-```
-
-2.先申请一个定时器管理handle
-
-```
-struct Timer timer1;
-```
-
-3.初始化定时器对象，注册定时器回调处理函数，设置延迟启动时间（ms），循环定时触发时间
-
-```
-timer_init(struct Timer* handle, void(*timeout_cb)(void *arg), uint32_t timeout, uint32_t repeat);
-```
-
-4.启动定时器
-
-```
-timer_start(&timer1);
-```
-
-5.设置1ms的硬件定时器循环调用 *timer_ticks()* 以提供时间基准
-
-```
-void HAL_SYSTICK_Callback(void)
+```c
+uint32_t PlatformTicksGetFunc(void)
 {
-    timer_ticks();
+    /* Platform implementation */
 }
+
+MultiTimerInstall(PlatformTicksGetFunc);
 ```
 
-6.在主循环调用定时器后台处理函数
+2. 实例化一个定时器对象；
 
+```c
+MultiTimer timer1;
 ```
-int main() 
+
+3. 设置定时时间，超时回调处理函数， 用户上下指针，启动定时器；
+
+```c
+int MultiTimerStart(&timer1, uint32_t timing, MultiTimerCallback_t callback, void* userData);
+```
+
+4. 在主循环调用定时器后台处理函数
+
+```c
+int main(int argc, char *argv[])
 {
     ...
-    while(1) {
+    while (1) {
         ...
-        timer_loop();
+        MultiTimerYield();
     }
 }
 ```
@@ -57,49 +43,61 @@ int main()
 ## 功能限制
 1.定时器的时钟频率直接影响定时器的精确度，尽可能采用1ms/5ms/10ms这几个精度较高的tick;
 
-2.定义应用定时器时，超时时间应合理设置，不应过大或过小，否则可能导致定时器超时时间不精准；
+2.定义应用定时器时，最大定时不可以超过 UINT32_MAX / 4；
 
-3.定时器的回调函数内不应执行耗时操作，否则可能因占用过长的时间，导致其他定时器无法正常超时；一般来说，若干个tick的时间是可以接受的；
+3.定时器的回调函数内不应执行耗时操作，否则可能因占用过长的时间，导致其他定时器无法正常超时；
 
-4.由于定时器的回调函数是在timer_loop内执行的，需要注意栈空间的使用不能过大，否则可能会导致栈溢出。
+4.由于定时器的回调函数是在 MultiTimerYield 内执行的，需要注意栈空间的使用不能过大，否则可能会导致栈溢出。
 
 ## Examples
 
 见example目录下的测试代码，main.c为普通平台测试demo，test_linux.c为linux平台的测试demo。
 
-```
-#include "multi_timer.h"
+```c
+#include <stdio.h>
+#include <sys/time.h>
+#include <time.h>
+#include "MultiTimer.h"
 
-struct Timer timer1;
-struct Timer timer2;
+MultiTimer timer1;
+MultiTimer timer2;
+MultiTimer timer3;
 
-void timer1_callback(void *arg)
+uint32_t PlatformTicksGetFunc(void)
 {
-    printf("timer1 timeout!\r\n");
+    struct timespec current_time;
+    clock_gettime(CLOCK_MONOTONIC, &current_time);
+    return (uint32_t)((current_time.tv_sec * 1000) + (current_time.tv_nsec / 1000000));
 }
 
-void timer2_callback(void *arg)
+void exampleTimer1Callback(MultiTimer* timer, void *userData)
 {
-    printf("timer2 timeout!\r\n");
+    printf("[T:%010d] Timer:%p callback-> %s.\r\n", PlatformTicksGetFunc(), timer, (char*)userData);
+    MultiTimerStart(timer, 1000, exampleTimer1Callback, userData);
 }
 
-int main()
+void exampleTimer2Callback(MultiTimer* timer, void *userData)
 {
-    timer_init(&timer1, timer1_callback, 1000, 1000); //1s loop
-    timer_start(&timer1);
-    
-    timer_init(&timer2, timer2_callback, 50, 0); //50ms delay
-    timer_start(&timer2);
-    
-    while(1) {
-        
-        timer_loop();
+    printf("[T:%010d] Timer:%p callback-> %s.\r\n", PlatformTicksGetFunc(), timer, (char*)userData);
+}
+
+void exampleTimer3Callback(MultiTimer* timer, void *userData)
+{
+    printf("[T:%010d] Timer:%p callback-> %s.\r\n", PlatformTicksGetFunc(), timer, (char*)userData);
+    MultiTimerStart(timer, 4567, exampleTimer3Callback, userData);
+}
+
+int main(int argc, char *argv[])
+{
+    MultiTimerInstall(PlatformTicksGetFunc);
+
+    MultiTimerStart(&timer1, 1000, exampleTimer1Callback, "1000ms CYCLE timer");
+    MultiTimerStart(&timer2, 5000, exampleTimer2Callback, "5000ms ONCE timer");
+    MultiTimerStart(&timer3, 3456, exampleTimer3Callback, "3456ms delay start, 4567ms CYCLE timer");
+
+    while (1) {
+        MultiTimerYield();
     }
-}
-
-void HAL_SYSTICK_Callback(void)
-{
-    timer_ticks(); //1ms ticks
 }
 ```
 
