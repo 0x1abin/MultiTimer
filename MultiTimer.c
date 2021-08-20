@@ -1,10 +1,15 @@
 #include "MultiTimer.h"
 #include <stdio.h>
 
-// Timer handle list head.
+#define MULTIMER_MAX_TIMEOUT  0x7fffffff
+
+/* Check if timer's expiry time is greater than time and care about uint32_t wraparounds */
+#define CHECK_TIME_LESS_THAN(t, compare_to) ( (((uint32_t)((t)-(compare_to))) > MULTIMER_MAX_TIMEOUT) ? 1 : 0 )
+
+/* Timer handle list head. */
 static MultiTimer* timerList = NULL;
 
-// Timer tick
+/* Timer tick */
 static PlatformTicksFunction_t platformTicksFunction = NULL;
 
 int MultiTimerInstall(PlatformTicksFunction_t ticksFunc)
@@ -15,7 +20,7 @@ int MultiTimerInstall(PlatformTicksFunction_t ticksFunc)
 
 int MultiTimerStart(MultiTimer* timer, uint32_t timing, MultiTimerCallback_t callback, void* userData)
 {
-    if (!timer || !callback) {
+    if (!timer || !callback || timing > MULTIMER_MAX_TIMEOUT) {
         return -1;
     }
     MultiTimer** nextTimer = &timerList;
@@ -68,7 +73,7 @@ int MultiTimerYield(void)
     for (; *nextTimer; nextTimer = &(*nextTimer)->next) {
         MultiTimer* entry = *nextTimer;
         /* Sorted list, just process with the front part. */
-        if (entry->deadline > platformTicksFunction()) {
+        if (CHECK_TIME_LESS_THAN(platformTicksFunction(), entry->deadline)) {
             return (int)(entry->deadline - platformTicksFunction());
         }
         /* remove expired timer from list */

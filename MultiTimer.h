@@ -7,7 +7,7 @@
 extern "C" {  
 #endif
 
-typedef uint64_t (*PlatformTicksFunction_t)(void);
+typedef uint32_t (*PlatformTicksFunction_t)(void);
 
 typedef struct MultiTimerHandle MultiTimer;
 
@@ -15,7 +15,7 @@ typedef void (*MultiTimerCallback_t)(MultiTimer* timer, void* userData);
 
 struct MultiTimerHandle {
     MultiTimer* next;
-    uint64_t deadline;
+    uint32_t deadline;
     MultiTimerCallback_t callback;
     void* userData;
 };
