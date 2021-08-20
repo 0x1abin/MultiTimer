@@ -72,18 +72,18 @@ uint32_t PlatformTicksGetFunc(void)
 
 void exampleTimer1Callback(MultiTimer* timer, void *userData)
 {
-    printf("[T:%010d] Timer:%p callback-> %s.\r\n", PlatformTicksGetFunc(), timer, (char*)userData);
+    printf("exampleTimer1Callback-> %s.\r\n", (char*)userData);
     MultiTimerStart(timer, 1000, exampleTimer1Callback, userData);
 }
 
 void exampleTimer2Callback(MultiTimer* timer, void *userData)
 {
-    printf("[T:%010d] Timer:%p callback-> %s.\r\n", PlatformTicksGetFunc(), timer, (char*)userData);
+    printf("exampleTimer2Callback-> %s.\r\n", (char*)userData);
 }
 
 void exampleTimer3Callback(MultiTimer* timer, void *userData)
 {
-    printf("[T:%010d] Timer:%p callback-> %s.\r\n", PlatformTicksGetFunc(), timer, (char*)userData);
+    printf("exampleTimer3Callback-> %s.\r\n", (char*)userData);
     MultiTimerStart(timer, 4567, exampleTimer3Callback, userData);
 }
 
