@@ -3,7 +3,7 @@ CC = gcc
 
 DEL = rm -rf
 
-CFLGAS += -std=c99
+CFLGAS += -std=c98
 CFLAGS += -D TEST
 CFLAGS += -g
 
