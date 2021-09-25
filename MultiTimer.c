@@ -69,23 +69,18 @@ int MultiTimerStop(MultiTimer* timer)
 
 int MultiTimerYield(void)
 {
-    MultiTimer** nextTimer = &timerList;
-    for (; *nextTimer; nextTimer = &(*nextTimer)->next) {
-        MultiTimer* entry = *nextTimer;
+    MultiTimer* entry = timerList;
+    for (; entry; entry = entry->next) {
         /* Sorted list, just process with the front part. */
         if (CHECK_TIME_LESS_THAN(platformTicksFunction(), entry->deadline)) {
             return (int)(entry->deadline - platformTicksFunction());
         }
         /* remove expired timer from list */
-        *nextTimer = entry->next;
+        timerList = entry->next;
 
         /* call callback */
         if (entry->callback) {
             entry->callback(entry, entry->userData);
         }
-        if (entry->next == NULL) {
-            return 0;
-        }
     }
-    return 0;
 }
