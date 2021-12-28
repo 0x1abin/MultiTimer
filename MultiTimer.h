@@ -29,7 +29,7 @@
 extern "C" {  
 #endif
 
-typedef uint32_t (*PlatformTicksFunction_t)(void);
+typedef uint64_t (*PlatformTicksFunction_t)(void);
 
 typedef struct MultiTimerHandle MultiTimer;
 
@@ -37,7 +37,7 @@ typedef void (*MultiTimerCallback_t)(MultiTimer* timer, void* userData);
 
 struct MultiTimerHandle {
     MultiTimer* next;
-    uint32_t deadline;
+    uint64_t deadline;
     MultiTimerCallback_t callback;
     void* userData;
 };
@@ -59,7 +59,7 @@ int MultiTimerInstall(PlatformTicksFunction_t ticksFunc);
  * @param userData user data.
  * @return int 0: success, -1: fail.
  */
-int MultiTimerStart(MultiTimer* timer, uint32_t timing, MultiTimerCallback_t callback, void* userData);
+int MultiTimerStart(MultiTimer* timer, uint64_t timing, MultiTimerCallback_t callback, void* userData);
 
 /**
  * @brief Stop the timer work, remove the handle off work list.
