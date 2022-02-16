@@ -13,7 +13,7 @@ int MultiTimerInstall(PlatformTicksFunction_t ticksFunc)
     return 0;
 }
 
-int MultiTimerStart(MultiTimer* timer, uint64_t timing, MultiTimerCallback_t callback, void* userData)
+int MultiTimerStart(MultiTimer* timer, uint64_t timing, MultiTimerCallback_t callback, void* userData, uint8_t is_repeated)
 {
     if (!timer || !callback ) {
         return -1;
@@ -29,8 +29,10 @@ int MultiTimerStart(MultiTimer* timer, uint64_t timing, MultiTimerCallback_t cal
 
     /* Init timer. */
     timer->deadline = platformTicksFunction() + timing;
+    timer->timeout = timing;
     timer->callback = callback;
     timer->userData = userData;
+    timer->is_repeated = is_repeated;
 
     /* Insert timer. */
     for (nextTimer = &timerList;; nextTimer = &(*nextTimer)->next) {
@@ -51,6 +53,7 @@ int MultiTimerStart(MultiTimer* timer, uint64_t timing, MultiTimerCallback_t cal
 int MultiTimerStop(MultiTimer* timer)
 {
     MultiTimer** nextTimer = &timerList;
+    timer->is_repeated = 0;
     /* Find and remove timer. */
     for (; *nextTimer; nextTimer = &(*nextTimer)->next) {
         MultiTimer* entry = *nextTimer;
@@ -76,6 +79,9 @@ int MultiTimerYield(void)
         /* call callback */
         if (entry->callback) {
             entry->callback(entry, entry->userData);
+            if(entry->is_repeated == 1) {
+                MultiTimerStart(entry, entry->timeout, entry->callback, entry->userData, 1);
+            }
         }
     }
     return 0;

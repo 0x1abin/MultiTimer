@@ -24,7 +24,7 @@ MultiTimer timer1;
 3. 设置定时时间，超时回调处理函数， 用户上下指针，启动定时器；
 
 ```c
-int MultiTimerStart(&timer1, uint64_t timing, MultiTimerCallback_t callback, void* userData);
+int MultiTimerStart(&timer1, uint64_t timing, MultiTimerCallback_t callback, void* userData, uint8_t is_repeated);
 ```
 
 4. 在主循环调用定时器后台处理函数
@@ -71,27 +71,26 @@ uint64_t PlatformTicksGetFunc(void)
 void exampleTimer1Callback(MultiTimer* timer, void *userData)
 {
     printf("exampleTimer1Callback-> %s.\r\n", (char*)userData);
-    MultiTimerStart(timer, 1000, exampleTimer1Callback, userData);
 }
 
 void exampleTimer2Callback(MultiTimer* timer, void *userData)
 {
-    printf("exampleTimer2Callback-> %s.\r\n", (char*)userData);
+    printf("exampleTimer2Callback-> %s.\r\n", (char*)userData, 0);
 }
 
 void exampleTimer3Callback(MultiTimer* timer, void *userData)
 {
     printf("exampleTimer3Callback-> %s.\r\n", (char*)userData);
-    MultiTimerStart(timer, 4567, exampleTimer3Callback, userData);
+    MultiTimerStart(timer, 4567, exampleTimer3Callback, userData, 0);
 }
 
 int main(int argc, char *argv[])
 {
     MultiTimerInstall(PlatformTicksGetFunc);
 
-    MultiTimerStart(&timer1, 1000, exampleTimer1Callback, "1000ms CYCLE timer");
-    MultiTimerStart(&timer2, 5000, exampleTimer2Callback, "5000ms ONCE timer");
-    MultiTimerStart(&timer3, 3456, exampleTimer3Callback, "3456ms delay start, 4567ms CYCLE timer");
+    MultiTimerStart(&timer1, 1000, exampleTimer1Callback, "1000ms CYCLE timer", 1);
+    MultiTimerStart(&timer2, 5000, exampleTimer2Callback, "5000ms ONCE timer", 0);
+    MultiTimerStart(&timer3, 3456, exampleTimer3Callback, "3456ms delay start, 4567ms CYCLE timer", 0);
 
     while (1) {
         MultiTimerYield();
