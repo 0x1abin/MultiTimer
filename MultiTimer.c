@@ -53,6 +53,7 @@ int MultiTimerStart(MultiTimer* timer, uint64_t timing, MultiTimerCallback_t cal
 int MultiTimerStop(MultiTimer* timer)
 {
     MultiTimer** nextTimer = &timerList;
+    timer->is_repeated = 0;
     /* Find and remove timer. */
     for (; *nextTimer; nextTimer = &(*nextTimer)->next) {
         MultiTimer* entry = *nextTimer;
