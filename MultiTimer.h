@@ -37,7 +37,9 @@ typedef void (*MultiTimerCallback_t)(MultiTimer* timer, void* userData);
 
 struct MultiTimerHandle {
     MultiTimer* next;
+    uint64_t timeout;
     uint64_t deadline;
+    uint8_t is_repeated;
     MultiTimerCallback_t callback;
     void* userData;
 };
@@ -57,9 +59,10 @@ int MultiTimerInstall(PlatformTicksFunction_t ticksFunc);
  * @param timing Set the start time.
  * @param callback deadline callback.
  * @param userData user data.
+ * @param is_repeated repeat(1) or not(0).
  * @return int 0: success, -1: fail.
  */
-int MultiTimerStart(MultiTimer* timer, uint64_t timing, MultiTimerCallback_t callback, void* userData);
+int MultiTimerStart(MultiTimer* timer, uint64_t timing, MultiTimerCallback_t callback, void* userData, uint8_t is_repeated);
 
 /**
  * @brief Stop the timer work, remove the handle off work list.
