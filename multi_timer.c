@@ -25,7 +25,7 @@ static uint32_t _timer_ticks = 0;
 void timer_init(struct Timer* handle, void (*timeout_cb)(void *arg), \
       uint32_t timeout, uint32_t repeat, void *arg)
 {
-    // memset(handle, sizeof(struct Timer), 0);
+    // memset(handle, 0, sizeof(struct Timer));
     handle->timeout_cb          = timeout_cb;
     handle->timeout             = timeout;
     handle->repeat              = repeat;
@@ -77,7 +77,7 @@ int timer_stop(struct Timer* handle)
         }
     }
 
-    return 0;
+    return -1;
 }
 
 /**
