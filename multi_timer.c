@@ -15,7 +15,7 @@ static uint32_t _timer_ticks = 0;
 
 /**
   * @brief  Initializes the timer struct handle.
-  * @param  handle: the timer handle strcut.
+  * @param  handle: the timer handle struct.
   * @param  timeout_cb: timeout callback.
   * @param  timeout: delay to start the timer.
   * @param  repeat: repeat interval time.
@@ -26,19 +26,19 @@ void timer_init(struct Timer* handle, void (*timeout_cb)(void *arg), \
       uint32_t timeout, uint32_t repeat, void *arg)
 {
     // memset(handle, sizeof(struct Timer), 0);
-    handle->timeout_cb          = timeout_cb;      
+    handle->timeout_cb          = timeout_cb;
     handle->timeout             = timeout;
     handle->repeat              = repeat;
-    handle->cur_ticks           = _timer_ticks;  
+    handle->cur_ticks           = _timer_ticks;
     handle->cur_expired_time    = handle->timeout;
     handle->arg                 = arg;
-    //printf("cur_ticks: %u, cur_expired_time: %u, _timer_ticks: %u, timeout: %u\r\n", 
+    //printf("cur_ticks: %u, cur_expired_time: %u, _timer_ticks: %u, timeout: %u\r\n",
     //  handle->cur_ticks, handle->cur_expired_time, _timer_ticks, timeout);
 }
 
 /**
   * @brief  Start the timer work, add the handle into work list.
-  * @param  btn: target handle strcut.
+  * @param  handle: target handle struct.
   * @retval 0: succeed. -1: already exist.
   */
 int timer_start(struct Timer* handle)
@@ -48,7 +48,7 @@ int timer_start(struct Timer* handle)
     while(target) {
         if(target == handle) {
             return -1;  //already exist.
-        }            
+        }
         target = target->next;
     }
     handle->next = head_handle;
@@ -59,7 +59,7 @@ int timer_start(struct Timer* handle)
 
 /**
   * @brief  Stop the timer work, remove the handle off work list.
-  * @param  handle: target handle strcut.
+  * @param  handle: target handle struct.
   * @retval 0: succeed. -1: timer not exist.
   */
 int timer_stop(struct Timer* handle)
@@ -74,7 +74,7 @@ int timer_stop(struct Timer* handle)
             return 0; // found specified timer
         } else {
             curr = &entry->next;
-        }            
+        }
     }
 
     return 0;
@@ -90,18 +90,18 @@ void timer_loop(void)
     struct Timer* target;
 
     for(target = head_handle; target; target = target->next) {
-        /* 
+        /*
         More detail on tick-clock overflow, please see https://blog.csdn.net/szullc/article/details/115332326
         */
         if(_timer_ticks - target->cur_ticks >= target->cur_expired_time) {
-            //printf("cur_ticks: %u, cur_expired_time: %u, _timer_ticks: %u\r\n", 
+            //printf("cur_ticks: %u, cur_expired_time: %u, _timer_ticks: %u\r\n",
             //        target->cur_ticks, target->cur_expired_time, _timer_ticks);
             if(target->repeat == 0) {
                 timer_stop(target);
             } else {
                 target->cur_ticks = _timer_ticks;
                 target->cur_expired_time = target->repeat;
-            }            
+            }
             target->timeout_cb(target->arg);
         }
     }
@@ -110,7 +110,7 @@ void timer_loop(void)
 /**
   * @brief  background ticks, timer repeat invoking interval nms.
   * @param  None.
-  * @retval None.
+  * @retval None
   */
 void timer_ticks(void)
 {
